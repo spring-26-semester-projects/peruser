@@ -1,40 +1,9 @@
 #ifndef __RPOL__
 #define __RPOL__
 
-#include <cstddef>
-#include <cstdbool>
 #include <string>
 #include <algorithm>
 #include <concepts>
-
-namespace {
-std::string_view torpol(std::string in)
-{
-	const std::string_view L("*+?");
-
-	int Rc = 0;
-	for (auto rit = in.rbegin(); rit < in.rend()-1; ++rit) {
-		std::for_each(L.cbegin(), L.cend(), [rit,&Rc](const char R) {
-			if (*rit == R) Rc = 2;
-		});
-
-		if (*rit != '|') Rc++;
-		
-		if (*rit == '|' && Rc > 1) {
-			char tmp = *rit;
-
-			*rit = *(rit-1);
-			*(rit-1) = *(rit-2);
-			*(rit-2) = tmp;
-
-			Rc = 0;
-		} else if (*rit == '|') {
-			std::swap(*rit, *(rit-1));
-		}
-	}
-
-	return std::string_view(in);
-};
 
 template <std::size_t N>
 struct Literal
@@ -51,15 +20,20 @@ struct Literal
 template <Literal S>
 concept is_regex_v = requires {
 	requires []() constexpr {
-		const std::string_view R("*+?|");
-
 		for (const char s : S.data) {
 			if (s == '\0') break;
 
-			if (s > 122) {
+			if (s == ' ') continue;
+
+			if (!((s >= 'a' && s <= 'z') || (s >= 'A' && s <= 'Z') || (s >= '0' && s <= '9'))) {
 				bool tmp = false;
-				for (const char r : R) {
-					if (s == r) tmp = true;
+				switch (s) {
+					case '*':
+					case '+':
+					case '?':
+					case '|':
+						tmp = true;
+						break;
 				}
 
 				if (!tmp) return false;
@@ -75,54 +49,49 @@ struct Is_Regex {
 	static constexpr auto value = S;
 };
 
+template <Literal S> requires is_regex_v<S>
+constexpr auto operator"" _re()
+{
+	return Is_Regex<S>{ };
+}
+
 struct Regex {
+	/*
+		There is a compile-time check for ‘‘valid symbols’’ (including the emtpy string),
+		otherwise: the class takes a valid regular expression, and stores it for persistent view.
+		
+		A mutable view ‘‘_m’’ exists, but it should not be accessed for correctness-sake
+		even inside the class itself aside from constructors, and operators.
+	*/
+
 	std::string _m { };
- 	std::string_view expr { };
+	std::string_view expr { };
 	std::string_view::const_iterator it { };
 
-	Regex() = default;
+	void torpol();
 
+	Regex() = default;
+	
 	template <Literal S>
-	Regex(Is_Regex<S>&&) : _m(torpol(std::string(S.data)))
+	Regex(Is_Regex<S>&&) : _m(S.data)
 	{
+		torpol();
+
 		expr = _m;
-		it   = expr.cbegin();
+		it  = expr.cbegin();
 	}	
 
 	Regex& operator=(Regex& fregex) = delete;
 
-	Regex(Regex&& fregex) noexcept : _m(std::move(fregex._m))
-	{
-		this->expr = std::string_view(this->_m);
-		this->it   = this->expr.cbegin() + std::distance(fregex.expr.cbegin(), fregex.it);
+	Regex(Regex&&) noexcept;
 
-		fregex.expr = { };
-	}
+	Regex& operator=(Regex&&) noexcept;
 
-	Regex& operator=(Regex&& fregex) noexcept
-	{
-		if (this != &fregex) {
-			this->_m   = std::move(fregex._m);
-			this->expr = std::string_view(this->_m);
-			this->it   = this->expr.cbegin() + std::distance(fregex.expr.cbegin(), fregex.it);
-
-			fregex.expr = { };
-		}
-
-		return *this;
-	}
+	bool operator==(const Regex&);
 
 	#ifdef __DEBUG_BUILD
-	#include <iostream>
-	void print() const { std::cout << expr << '\n'; }
+	void _print() const;
 	#endif
 };
 
-template <Literal S> requires is_regex_v<S>
-constexpr auto operator"" _re()
-{
-	return ::Is_Regex<S>{ };
-}
-
-}
 #endif /* __RPOL__ */
