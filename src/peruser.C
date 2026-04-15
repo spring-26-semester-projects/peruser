@@ -1,12 +1,13 @@
 #include <iostream>
+#include <cassert>
 #include <rpol.h>
 
 int main()
 {
 	// just a test
-	Regex A("a|b*|c*|ab|c"_re);
+	Regex A("a|b"_re);
 
-	A.print();
+	A._print();
 
 	return 0;
 }
