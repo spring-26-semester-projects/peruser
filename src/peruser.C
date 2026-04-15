@@ -4,10 +4,9 @@
 int main()
 {
 	// just a test
-	std::string R = { "a|b*|c*|ab|c" };
-	Regex A(R);
+	Regex A("a|b*|c*|ab|c"_re);
 
-	std::cout << '\n';
+	A.print();
 
 	return 0;
 }
