@@ -68,6 +68,51 @@ To try another regex, update src/peruser.C and rebuild.
 
 If you are making parser changes, keep edits small and validate behavior with a quick run after each meaningful change.
 
+## Continuous Integration
+
+This project uses GitHub Actions to validate builds on Linux (GCC) and Windows (MSVC) for every push and pull request.
+
+**Supported platforms**: Ubuntu (GCC/Clang), Windows (MSVC)
+
+**What CI checks**:
+- CMake configuration with portable compiler flags
+- Full build on both Linux and Windows
+- Smoke test (executable runs successfully)
+
+**Local reproduction**: Use the same CMake commands documented in the [Build](#build) section to verify locally before pushing.
+
+## Dev Release Pipeline
+
+When you push to the `dev` branch, GitHub Actions automatically:
+1. Builds the project for Ubuntu (Linux) and Windows
+2. Runs smoke tests to verify the binaries work
+3. Publishes both binaries to a GitHub release tagged as `dev`
+
+You can download the latest development binaries from the [Releases](../../releases/tag/dev) page under the `dev` tag.
+
+**Binaries available**:
+- `peruser-linux-x64` — Linux executable
+- `peruser-windows-x64.exe` — Windows executable
+
+The dev release is marked as a pre-release and is updated on every push to dev, so you always have the latest development build available.
+
+## Stable Releases
+
+Stable releases are created by pushing a version tag (e.g., `v1.0.0`, `v1.1.0`) to the repository.
+
+**To create a release**:
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+GitHub Actions automatically:
+1. Builds binaries for Ubuntu (Linux) and Windows
+2. Runs smoke tests on both platforms
+3. Creates a GitHub release with the binaries attached
+
+**Stable release binaries** are available on the [Releases](../../releases) page and are marked as stable (not pre-release).
+
 ## Validation Checklist
 
 After parser or build-related changes:
