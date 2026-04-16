@@ -10,3 +10,11 @@ tags
 build/
 CMakeFiles/
 CMakeCache.txt
+
+
+# .github
+AGENTS.md
+.github/agents
+.github/prompts
+.github/skills
+.github/instructions
