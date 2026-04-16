@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_library(OBJS OBJECT
 	include/rpol.h
+	src/rpol.C
 	src/peruser.C
 )
 
@@ -21,9 +22,9 @@ target_compile_options(OBJS PRIVATE
 
 target_compile_definitions(OBJS PRIVATE __DEBUG_BUILD)
 
-add_executable(peruser.elf)
+add_executable(peruser)
 
-target_link_libraries(peruser.elf PRIVATE OBJS)
-set_target_properties(peruser.elf PROPERTIES
+target_link_libraries(peruser PRIVATE OBJS)
+set_target_properties(peruser PROPERTIES
 	LINKER_LANGUAGE CXX
 )
