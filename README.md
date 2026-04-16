@@ -1,6 +1,6 @@
 # peruser
 
-A small C++20 project for regular-expression preprocessing.
+A regular-expression preprocessing.
 
 At a high level, peruser does two things:
 - Compile-time validation of allowed regex symbols through a string literal operator.
@@ -14,15 +14,6 @@ The codebase is intentionally compact, making it useful for parser experimentati
 - Compile-time symbol validation for a restricted regex alphabet
 - In-place runtime conversion in Regex::torpol()
 - Lightweight structure that is easy to read and modify
-
-## Project Layout
-
-- include/rpol.h: literal templates, regex concept checks, and Regex declarations
-- src/rpol.C: Regex implementation, torpol conversion, and move semantics
-- src/peruser.C: executable entry point with a quick smoke check
-- CMakeLists.txt: build configuration
-- scripts/build.sh: machine-local helper script
-- tools/cat.py: utility script (not part of the normal build)
 
 ## Requirements
 
@@ -59,7 +50,7 @@ cmake --build build
 - Parentheses are currently unsupported.
 - The build defines __DEBUG_BUILD, so debug-only print helpers are compiled.
 
-In short, the current implementation prioritizes a simple fast path for valid expressions over defensive handling of malformed input.
+In short: this project currently favors a simple, fast path for valid inputs over defensive handling of invalid expressions.
 
 ## Example
 
@@ -76,15 +67,6 @@ To try another regex, update src/peruser.C and rebuild.
 - Prefer portable CMake commands over machine-specific scripts.
 
 If you are making parser changes, keep edits small and validate behavior with a quick run after each meaningful change.
-
-## Contributing Workflow
-
-This repository currently uses manual verification rather than an automated test suite.
-
-For parser or build-related changes, follow this sequence:
-- Build successfully with CMake.
-- Run the peruser executable.
-- Confirm output behavior for the specific regex scenario you changed.
 
 ## Validation Checklist
 
