@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_library(OBJS OBJECT
 	include/rpol.h
+	include/ratomic.h
 	src/rpol.C
 	src/peruser.C
 )
