@@ -1,0 +1,12 @@
+# editors
+*.vim
+*.swp
+.vscode
+.idea
+tags
+
+# cmake
+*.cmake
+build/
+CMakeFiles/
+CMakeCache.txt
