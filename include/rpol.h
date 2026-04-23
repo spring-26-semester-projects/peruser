@@ -49,8 +49,8 @@ struct Is_Regex {
 	static constexpr auto value = S;
 };
 
-template <Literal S> requires is_regex_v<S>
-constexpr auto operator"" _re()
+template <Literal S> 
+constexpr auto operator"" _re() requires is_regex_v<S>
 {
 	return Is_Regex<S>{ };
 }
