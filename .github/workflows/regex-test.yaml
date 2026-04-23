@@ -32,6 +32,7 @@ jobs:
           cd build
           cmake ..
           make
+          cd ..
           ./build/peruser-tests
           echo "🔬 Tests yield expected results."
 
