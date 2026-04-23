@@ -14,6 +14,14 @@ void Regex::torpol()
 		if neither, then ab, bb, etc., then (bb) = bR and (aa) = aR, but not (aaa) = aaR.
 	*/
 
+
+	/* TODO: Fix empty string problem.
+
+		-> PROPOSED FIX 
+		int Ep = 0; and then count the number of empty strings, and add them into the swaps
+		much like Rc does right now, e.g.: std::swap(*rit, *(rit-1-Ep));
+
+	*/
 	int Rc = 0;
 	for (auto rit = _m.rbegin(); rit < _m.rend()-1; ++rit) {
 		if (*rit == ' ') continue;
@@ -30,10 +38,12 @@ void Regex::torpol()
 		
 		if (*rit == '|' && Rc > 1) {
 			std::rotate(rit.base()-1, rit.base(), rit.base()+2);
-
+		
 			Rc = 0;
 		} else if (*rit == '|') {
 			std::swap(*rit, *(rit-1));
+
+			Rc = 0;
 		}
 	}
 }
