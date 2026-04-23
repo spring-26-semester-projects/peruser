@@ -27,8 +27,11 @@ jobs:
 
       - name: Run tests
         run: |
-          chmod +x ./scripts/build.sh
-          ./scripts/build.sh
+          set -x
+          mkdir -p build
+          cd build
+          cmake ..
+          make
           ./build/peruser-tests
           echo "🔬 Tests yield expected results."
 
