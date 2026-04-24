@@ -13,7 +13,7 @@ static constexpr const Literal all_valid_symbols = "abcdefghijklmnopqrstuvwxyz01
 template <Literal S=all_valid_symbols>
 void check_str()
 {	
-	static_assert(requires { requires is_regex_v<S>; }, "❌ Invalid symbol.");
+	static_assert(requires { requires is_regex<S>; }, "❌ Invalid symbol.");
 }
 
 using Rview = ::Groper_view<Ugrope{sizeof(Regex), 0}>;

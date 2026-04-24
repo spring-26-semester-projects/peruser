@@ -18,7 +18,7 @@ struct Literal
 };
 
 template <Literal S>
-concept is_regex_v = requires {
+concept is_regex = requires {
 	requires []() constexpr {
 		for (const char s : S.data) {
 			if (s == '\0') break;
@@ -50,7 +50,7 @@ struct Is_Regex {
 };
 
 template <Literal S> 
-constexpr auto operator"" _re() requires is_regex_v<S>
+constexpr auto operator"" _re() requires is_regex<S>
 {
 	return Is_Regex<S>{ };
 }
