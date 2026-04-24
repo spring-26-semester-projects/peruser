@@ -33,7 +33,7 @@ jobs:
           cmake ..
           make
           cd ..
-          ./build/peruser-tests
+          ./build/tests/peruser-tests
           echo "🔬 Tests yield expected results."
 
       - name: Upload artifact
