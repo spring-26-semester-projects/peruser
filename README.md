@@ -1,8 +1,8 @@
 # Peruser
 
-[![Build](https://github.com)](https://github.com/spring-26-semester-projects/peruser/actions/workflows/build-test.yaml)
+[![Build](https://github.com/spring-26-semester-projects/peruser/actions/workflows/build-test.yaml/badge.svg)](https://github.com/spring-26-semester-projects/peruser/actions/workflows/build-test.yaml)
 
-[![Unit Tests](https://github.com)](https://github.com/spring-26-semester-projects/peruser/actions/workflows/regex-test.yaml)
+[![Unit Tests](https://github.com/spring-26-semester-projects/peruser/actions/workflows/regex-test.yaml/badge.svg)](https://github.com/spring-26-semester-projects/peruser/actions/workflows/regex-test.yaml)
 
 <!-- badges go here
 
