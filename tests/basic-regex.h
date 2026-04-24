@@ -56,7 +56,7 @@ void reverse_polish_test(unsigned char buf[sizeof(S)])
 
 	std::size_t j = 0, k = 0;
 	unsigned char i = RV.peek(0, j, R);
-	for (;j < s-1; ++j) {
+	for (;j < s-1;) {
 		bool tmp = false;
 
 		switch (i) {
@@ -71,8 +71,8 @@ void reverse_polish_test(unsigned char buf[sizeof(S)])
 			ubuf[k] = i;
 			++k;
 		}
-
-		i = RV.peek(0, j, R);
+		
+		i = RV.peek(0,++j,R);
 	}
 
 	std::memcpy(buf, ubuf+(k-sizeof(S)+1), sizeof(S)-1);
