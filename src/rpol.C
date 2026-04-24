@@ -48,10 +48,13 @@ void Regex::torpol()
 	}
 }
 
-Regex::Regex(Regex&& fregex) noexcept : _m(std::move(fregex._m))
+Regex::Regex(Regex&& fregex) noexcept
 {
+	std::size_t dist = std::distance(fregex.expr.cbegin(), fregex.it);
+
+	this->_m = std::move(fregex._m);
 	this->expr = std::string_view(this->_m);
-	this->it   = this->expr.cbegin() + std::distance(fregex.expr.cbegin(), fregex.it);
+	this->it   = this->expr.cbegin() + dist;
 
 	fregex.expr = { };
 }
@@ -59,9 +62,11 @@ Regex::Regex(Regex&& fregex) noexcept : _m(std::move(fregex._m))
 Regex& Regex::operator=(Regex&& fregex) noexcept
 {
 	if (this != &fregex) {
+		std::size_t dist = std::distance(fregex.expr.cbegin(), fregex.it);
+
 		this->_m   = std::move(fregex._m);
 		this->expr = std::string_view(this->_m);
-		this->it   = this->expr.cbegin() + std::distance(fregex.expr.cbegin(), fregex.it);
+		this->it   = this->expr.cbegin() + dist; 
 
 		fregex.expr = { };
 	}
@@ -71,13 +76,7 @@ Regex& Regex::operator=(Regex&& fregex) noexcept
 
 bool Regex::operator==(const Regex& fregex)
 {
-	for (auto it = this->it; it != this->expr.cend(); ++it) {
-		if (*(fregex.expr.cbegin() + std::distance(this->expr.cbegin(), it)) != *it) {
-			return false;
-		}
-	}
-
-	return true;
+	return this->expr == fregex.expr;
 }
 
 #ifdef __DEBUG_BUILD
