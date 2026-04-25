@@ -88,18 +88,10 @@ void Groper_view<U...>::regex_cmp()
 
 	unsigned char i = peek(0, 0);
 	for (std::size_t k : { 0, 1, 16, 32 }) { 
-		switch (k) {
-			case 0:
-			case 1:
-			case 16:
-			case 32:
-				i = peek(0,k);
+		i = peek(0,k);
 
-				if (std::isalpha(i) || std::isdigit(i) || i == '*' || i == '|' || i == '?') {
-					if (std::memcmp(W.data, start+k, s) == 0) return;
-				}
-
-				break;
+		if (std::isalpha(i) || std::isdigit(i) || i == '*' || i == '|' || i == '?') {
+			if (std::memcmp(W.data, start+k, s) == 0) return;
 		}
 	}
 
