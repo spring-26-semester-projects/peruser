@@ -3,27 +3,27 @@
 
 #include "_util.h"
 #include <rpol.h>
-#include <functional>
 #include <concepts>
+#include <cstdbool>
 
 namespace {
 
 static constexpr const Literal all_valid_symbols = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-template <Literal S=all_valid_symbols>
+template <Literal S=all_valid_symbols, bool Is=true>
 void check_str()
 {	
-	static_assert(requires { requires is_regex<S>; }, "❌ Invalid symbol.");
+	static_assert(requires { requires is_regex<S> == Is; }, "❌ Invalid symbol.");
 }
-
+/*
 using Rview = ::Groper_view<Ugrope{sizeof(Regex), 0}>;
 
 template <Literal S, typename F>
 void grope_regex(F&& L) requires std::invocable<F, const Rview&>
 {
-	/*
+	/
 		Use it to go over the entire Regex class by passing it a function/handler.
-	*/
+	/
 
 	std::unique_ptr<Regex> R;
 
@@ -31,7 +31,7 @@ void grope_regex(F&& L) requires std::invocable<F, const Rview&>
 
 	L(gv);
 }
-
+*/
 }
 
 #endif /* __TEST_VALID_SYMBOLS_H__ */
