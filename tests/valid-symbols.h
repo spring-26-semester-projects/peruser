@@ -15,23 +15,7 @@ void check_str()
 {	
 	static_assert(requires { requires is_regex<S> == Is; }, "❌ Invalid symbol.");
 }
-/*
-using Rview = ::Groper_view<Ugrope{sizeof(Regex), 0}>;
 
-template <Literal S, typename F>
-void grope_regex(F&& L) requires std::invocable<F, const Rview&>
-{
-	/
-		Use it to go over the entire Regex class by passing it a function/handler.
-	/
-
-	std::unique_ptr<Regex> R;
-
-	Rview gv(Regex(operator""_re<S>()), R);
-
-	L(gv);
-}
-*/
 }
 
 #endif /* __TEST_VALID_SYMBOLS_H__ */
