@@ -2,8 +2,8 @@
 
 set -x
 
-cd ~/prjs/peruser/build
-
+mkdir -p build
+cd build
 cmake ..
 make
 

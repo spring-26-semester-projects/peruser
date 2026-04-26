@@ -1,0 +1,41 @@
+name: Build test
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:bookworm
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y \
+            g++ \
+            cmake \
+            python3
+
+      - name: Run build
+        run: |
+          set -x
+          mkdir -p build
+          cd build
+          cmake ..
+          make
+          echo "✅ Build successful."
+          cd ..
+          ./build/peruser
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: peruser
+          path: ./build/peruser

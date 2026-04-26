@@ -2,16 +2,14 @@ cmake_minimum_required(VERSION 3.15)
 
 project(Peruser LANGUAGES C CXX)
 
-set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
 
 add_library(OBJS OBJECT
 	include/rpol.h
 	src/rpol.C
-	src/peruser.C
 )
 
-target_include_directories(OBJS PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(OBJS PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_options(OBJS PRIVATE
 	-std=c++20
 	-g
@@ -20,11 +18,18 @@ target_compile_options(OBJS PRIVATE
 	-Wtype-limits
 )
 
-target_compile_definitions(OBJS PRIVATE __DEBUG_BUILD)
+target_compile_definitions(OBJS PUBLIC __DEBUG_BUILD)
 
-add_executable(peruser)
+add_executable(peruser
+	src/peruser.C
+	$<TARGET_OBJECTS:OBJS>
+)
+
+target_include_directories(peruser PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(peruser PRIVATE OBJS)
 set_target_properties(peruser PROPERTIES
 	LINKER_LANGUAGE CXX
 )
+
+add_subdirectory(tests)
