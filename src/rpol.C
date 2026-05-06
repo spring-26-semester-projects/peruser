@@ -4,89 +4,76 @@
 #include <rpol.h>
 #include <stack>
 
-// TODO: add stack to support use of parantheses.
 void Regex::torpol()
 {
-	/*
-		torpol is an infix-to-reverse-polish notation converter that assumes CORRECT SYNTAX.
+    std::string output;
+    std::stack<char> ops;
 
-		If the syntax is incorrect, e.g., "|a", then it will produce UB.
-		torpol should not be used outside the regex class hence...
+    auto precedence = [](char op) {
+        return (op == '|') ? 1 : 2;
+    };
 
-		it checks if aRb, if so, abR, else
-		either aR, where R = *, +, ?, and if so aR
-		if neither, then ab, bb, etc., then (bb) = bR and (aa) = aR, but not (aaa) = aaR.
-	*/
+    for (char c : _m) {
+        if (c == ' ') continue;
 
-	/* TODO: Fix empty string problem.
-		-> PROPOSED FIX
-		int Ep = 0; and then count the number of empty strings, and add them into the swaps
-		much like Rc does right now, e.g.: std::swap(*rit, *(rit-1-Ep));
-	*/
+        if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
+            output += c;
+        } else if (c == '(') {
+            ops.push(c);
+        } else if (c == ')') {
+            while (!ops.empty() && ops.top() != '(') {
+                output += ops.top();
+                ops.pop();
+            }
+            if (!ops.empty()) ops.pop();
+        } else {
+            int prec = precedence(c);
+            while (!ops.empty() && ops.top() != '(' && precedence(ops.top()) >= prec) {
+                output += ops.top();
+                ops.pop();
+            }
+            ops.push(c);
+        }
+    }
 
-	int Rc = 0;
-	for (auto rit = _m.rbegin(); rit < _m.rend() - 1; ++rit)
-	{
-		if (*rit == ' ')
-			continue;
+    while (!ops.empty()) {
+        output += ops.top();
+        ops.pop();
+    }
 
-		switch (*rit)
-		{
-		case '*':
-		case '+':
-		case '?':
-			Rc = 2;
-			break;
-		}
-
-		if (*rit != '|')
-			Rc++;
-
-		if (*rit == '|' && Rc > 1)
-		{
-			std::rotate(rit.base() - 1, rit.base(), rit.base() + 2);
-
-			Rc = 0;
-		}
-		else if (*rit == '|')
-		{
-			std::swap(*rit, *(rit - 1));
-
-			Rc = 0;
-		}
-	}
+    _m = output;
 }
 
 Regex::Regex(Regex &&fregex) noexcept
 {
-	std::size_t dist = std::distance(fregex.expr.cbegin(), fregex.it);
+    std::size_t dist = std::distance(fregex.expr.cbegin(), fregex.it);
 
-	this->_m = std::move(fregex._m);
-	this->expr = std::string_view(this->_m);
-	this->it = this->expr.cbegin() + dist;
+    this->_m = std::move(fregex._m);
+    this->expr = std::string_view(this->_m);
+    this->it = this->expr.cbegin() + dist;
 
-	fregex.expr = {};
+    fregex.expr = {};
 }
 
 Regex &Regex::operator=(Regex &&fregex) noexcept
 {
-	if (this != &fregex)
-	{
-		std::size_t dist = std::distance(fregex.expr.cbegin(), fregex.it);
+    if (this != &fregex)
+    {
+        std::size_t dist = std::distance(fregex.expr.cbegin(), fregex.it);
 
-		this->_m = std::move(fregex._m);
-		this->expr = std::string_view(this->_m);
-		this->it = this->expr.cbegin() + dist;
+        this->_m = std::move(fregex._m);
+        this->expr = std::string_view(this->_m);
+        this->it = this->expr.cbegin() + dist;
 
-		fregex.expr = {};
-	}
+        fregex.expr = {};
+    }
 
-	return *this;
+    return *this;
 }
 
 bool Regex::operator==(const Regex &fregex)
 {
-	return this->expr == fregex.expr;
+    return this->expr == fregex.expr;
 }
 
 #ifdef __DEBUG_BUILD

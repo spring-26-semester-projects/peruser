@@ -5,34 +5,42 @@
 
 void main_check_test()
 {
-	check_str(); // should pass.
+	/** pass */
+	check_str();
 
-	check_str<"a*|b|c">(); // should pass.
-	
-	check_str<"I met a travaller from an antique land who said, two vast and trunkless legs of stone, stand in the desert", false>(); // should fail.
+	/** pass */
+	check_str<"a*|b|c">();
 
-	check_str<" ">(); // should pass.
+	/** fail,  */
+	check_str<"Created with &love; by 0xq4b4s", false>();
 
-	check_str<" hell $ o?", false>(); // should fail.
+	/** pass */
+	check_str<" ">();
 
-	check_str<"aaaaaaaaaaaaaaaaa ** bbbbbbbbbbbbbbbbbbbbbbb ** ccccccc">(); // should pass.
+	/**
+	 * fail, contains invalid symbol $.
+	 */
+	check_str<" hell $ o?", false>();
+
+	check_str<"aaaaaaaaaaaaaaaaa ** bbbbbbbbbbbbbbbbbbbbbbb ** ccccccc">();
 }
 
 void main_polish_test()
 {
 	check_regex<"a|b", "ab|">();
 
-	check_regex<"aaaaa|bb","aaaaabb|">();
+	check_regex<"aaaaa|bb", "aaaaabb|">();
 
 	check_regex<"slfdkjdlfk*jad*sgklasdjasaldlsaj*dhsjahd*k*sag*dyqwbdg", "slfdkjdlfk*jad*sgklasdjasaldlsaj*dhsjahd*k*sag*dyqwbdg">();
 
 	check_regex<"a*|b|c|d|e|ff", "a*b|c|d|e|ff|">();
 
 	// TODO: Fix this.
-//	check_regex<"a  |   b  |   c*", "a     b  |   c*|">;
+	// check_regex<"a  |   b  |   c*", "a     b  |   c*|">;
 }
 
-int main() {
+int main()
+{
 	main_polish_test();
 
 	return 0;
