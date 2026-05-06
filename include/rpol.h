@@ -32,6 +32,8 @@ concept is_regex = requires {
 					case '+':
 					case '?':
 					case '|':
+					case '(':
+					case ')':
 						tmp = true;
 						break;
 				}

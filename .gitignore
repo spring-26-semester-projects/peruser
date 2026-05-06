@@ -10,3 +10,6 @@ tags
 build/
 CMakeFiles/
 CMakeCache.txt
+
+
+docs/
