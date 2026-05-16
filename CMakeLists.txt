@@ -19,6 +19,7 @@ if(MSVC)
         /std:c++20
         /W4
         /permissive-
+        /TP # Treats all files as C++
     )
 else() # GCC or Clang
     target_compile_options(OBJS PRIVATE
@@ -31,7 +32,7 @@ endif()
 
 target_compile_definitions(OBJS PRIVATE __DEBUG_BUILD)
 
-add_executable(peruser)
+add_executable(peruser $<TARGET_OBJECTS:OBJS>)
 
 target_link_libraries(peruser PRIVATE OBJS)
 set_target_properties(peruser PROPERTIES
