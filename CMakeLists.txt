@@ -13,13 +13,21 @@ add_library(OBJS OBJECT
 )
 
 target_include_directories(OBJS PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_compile_options(OBJS PRIVATE
-	-std=c++20
-	-g
-	-Wall
-	-Wsign-compare
-	-Wtype-limits
-)
+
+if(MSVC)
+    target_compile_options(OBJS PRIVATE
+        /std:c++20
+        /W4
+        /permissive-
+    )
+else() # GCC or Clang
+    target_compile_options(OBJS PRIVATE
+        -std=c++20
+        -Wall
+        -Wsign-compare
+        -Wtype-limits
+    )
+endif()
 
 target_compile_definitions(OBJS PRIVATE __DEBUG_BUILD)
 
