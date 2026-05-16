@@ -2,10 +2,10 @@
 
 int main()
 {
-	// just a test
-	Regex A("a|b"_re);
+    // just a test
+    Regex A("a|b"_re);
 
-	A._print();
+    A._print();
 
-	return 0;
+    return 0;
 }
