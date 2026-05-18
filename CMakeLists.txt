@@ -6,13 +6,13 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
 
 add_library(OBJS OBJECT
-    include/rpol.h
-    include/ratomic.h
-    src/rpol.C
-    src/ratomic.C
+	include/rpol.h
+	include/ratomic.h
+	src/rpol.C
+	src/peruser.C
 )
 
-target_include_directories(OBJS PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(OBJS PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if(MSVC)
     target_compile_options(OBJS PRIVATE
@@ -30,14 +30,11 @@ else() # GCC or Clang
     )
 endif()
 
-target_compile_definitions(OBJS PUBLIC __DEBUG_BUILD)
+target_compile_definitions(OBJS PRIVATE __DEBUG_BUILD)
 
-# Primary Application Target
-add_executable(peruser src/peruser.C)
+add_executable(peruser $<TARGET_OBJECTS:OBJS>)
+
 target_link_libraries(peruser PRIVATE OBJS)
-set_target_properties(peruser PROPERTIES LINKER_LANGUAGE CXX)
-
-# Test Suite Binary Target
-add_executable(tocc_test_runner tests/test_nfa.C)
-target_link_libraries(tocc_test_runner PRIVATE OBJS)
-set_target_properties(tocc_test_runner PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(peruser PROPERTIES
+	LINKER_LANGUAGE CXX
+)
