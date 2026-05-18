@@ -62,8 +62,9 @@ Regex& Regex::operator=(Regex&& fregex) noexcept
 
 bool Regex::operator==(const Regex& fregex)
 {
-    for (auto it = this->it; it != this->expr.cend(); ++it) {
-        if (*(fregex.expr.cbegin() + std::distance(this->expr.cbegin(), it)) != *it) {
+    // Fix: renamed "it" to "lit" to prevent this warning: "declaration of 'it' hides class member".
+    for (auto lit = this->it; lit != this->expr.cend(); ++lit) {
+        if (*(fregex.expr.cbegin() + std::distance(this->expr.cbegin(), lit)) != *lit) {
             return false;
         }
     }
