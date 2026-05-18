@@ -1,36 +1,13 @@
-# Editors
+# editors
 *.vim
-*.swp
+*.sw?
 .vscode
 .idea
 tags
-.vs/
-*.user
-*.userosscache
-*.sln.docstates
+.clang-format
 
-# Build & Build Tool Generators
+# cmake
 *.cmake
 build/
 CMakeFiles/
 CMakeCache.txt
-out/
-bin/
-obj/
-CMakePresets.json
-
-# Compiled Objects & Libraries
-*.o
-*.obj
-*.a
-*.lib
-*.so
-*.dylib
-*.dll
-*.exe
-*.pdb
-*.ilk
-
-# OS Specific System Files
-.DS_Store
-Thumbs.db
