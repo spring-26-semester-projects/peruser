@@ -13,10 +13,10 @@ add_library(OBJS OBJECT
 target_include_directories(OBJS PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if (MSVC)
-	target_compile_options(OBJS PUBLIC
+	target_compile_options(OBJS PRIVATE
 		/W4
 		/Zi
-		/permissive-
+		/Zc:__cplusplus
 	)
 else()
 	target_compile_options(OBJS PRIVATE

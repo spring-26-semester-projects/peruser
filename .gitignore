@@ -3,6 +3,7 @@
 *.sw?
 .vscode
 .idea
+.vs
 tags
 .clang-format
 
