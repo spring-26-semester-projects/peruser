@@ -7,7 +7,7 @@ target_include_directories(TESTSXX INTERFACE
 )
 
 if (MSVC)
-	target_compile_options(TESTSXX INTERFACE /W4 /Zi /permissive- )
+	target_compile_options(TESTSXX INTERFACE /W4 /Zi )
 else()
 	target_compile_options(TESTSXX INTERFACE -std=c++20 -g -Wall -Wsign-compare -Wtype-limits)
 endif()

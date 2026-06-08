@@ -3,7 +3,18 @@
 
 #include "rpol.h"
 #include <vector>
+#include <cstddef>
 #include <type_traits>
+
+#define MAX_VMSTACK_SIZE 1024
+
+enum class Opcodes : unsigned char {
+	SPLIT,
+	JUMP,
+	ACCEPT,
+	TRAP,
+	NEW,
+};
 
 template <typename>
 struct is_std_vector : std::false_type { };
@@ -29,13 +40,13 @@ struct Q {
 	Q& operator=(const Q&) = delete;
 	Q& operator=(Q&& fQ) noexcept
 	{
-		if (this != &fQ) this->q = std::move(fQ.q);
+		if (this != &fQ) this->q = fQ.q;
 
 		return *this;
 	}
 };
 
-using Delta = Q (*)(Q, Regex&&);
+using Delta = unsigned char (*)(unsigned char, char);
 
 struct Nfa {
 	Q Qm;
@@ -44,8 +55,25 @@ struct Nfa {
 	const std::string_view L { };
 	const unsigned char q0 { };
 	Delta Dm;
+};
 
-	void read_tape(Regex);
+struct State {
+	unsigned char qn { };
+	char input { };
+	unsigned char qt { };
+};
+
+struct VirtualMachine {
+	Stackbuf<State, MAX_VMSTACK_SIZE> stack;
+	Opcodes *code { };
+	
+	void read_tape(char *q)
+	{
+		code[1] = Opcodes::SPLIT;
+
+		State tmp = { .input = *q, };
+		stack.push(tmp);
+	}
 };
 
 #endif /* __RATOMIC__ */

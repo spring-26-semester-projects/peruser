@@ -9,16 +9,20 @@
 #include <utility>
 #include <climits>
 #include <iterator>
+#include <cassert>
+#include <cstdbool>
 
 #include <iostream>
 
 #define REGEX_MAX_LEN INT_MAX
 
-template <std::size_t N>
+template <std::size_t N=1>
 struct Literal
 {
 	static constexpr std::size_t size = N;
 	char data[N] { };
+
+	constexpr Literal() = default;
 
 	consteval Literal(const char (&s)[N])
 	{
@@ -41,35 +45,32 @@ concept is_regex = requires {
 		for (const char s : S.data) {
 			if (s == '\0') break;
 
+			if (s == ' ') continue;
+
 			switch (s) {
-				case ' ':
+				case '*':
+				case '?':
+				case '+':
+				case '|':
+					escape = false;
 					continue;
+			}
+
+			if (escape) return false;
+
+			switch (s) {
 				case '(':
 					count++;
 					continue;
 				case ')':
 					count--;
-					continue;
+					continue;	
 				case '\\':
 					escape = true;
 					continue;
-				default:
-					break;
 			}
 
-			if (!((s >= 'a' && s <= 'z') || (s >= 'A' && s <= 'Z') || (s >= '0' && s <= '9')) || escape) {
-				bool tmp = false;
-				switch (s) {
-					case '*':
-					case '?':
-					case '|':
-						tmp = true;
-						break;
-				}
-
-				if (!tmp) return false;
-				if (escape) escape = false;
-			}
+			if (!((s >= 'a' && s <= 'z') || (s >= 'A' && s <= 'Z') || (s >= '0' && s <= '9'))) return false;
 		}
 
 		if (count != 0) return false;
@@ -84,9 +85,9 @@ struct Is_Regex {
 };
 
 template <Literal S> requires is_regex<S>
-constexpr auto operator"" _re()
+constexpr auto operator""_re()
 {
-	return Is_Regex<S>{ };
+	return Is_Regex<S>{};
 }
 
 struct Regex {
@@ -102,19 +103,31 @@ struct Regex {
 	std::string_view expr { };
 	std::string_view::const_iterator it { };
 
-	template <Literal S>
-	static constexpr auto torpol();
+        template <Literal S>
+        static constexpr auto torpol();
+
+	std::string torpol(std::string&);
 
 	Regex() = default;
-	
+
 	template <Literal S>
 	Regex(Is_Regex<S>&&)
 	{
 		static constexpr auto tmp = torpol<S>();
 		_m.assign(tmp.data, S.size);
+
 		expr = _m;
 		it  = expr.cbegin();
-	}	
+	}
+
+	Regex(std::string& fstr)
+	{
+		auto tmp = torpol(fstr);
+		_m.assign(tmp.data(), tmp.size());
+
+		expr = _m;
+		it   = expr.cbegin();
+	}
 
 	Regex& operator=(Regex& fregex) = delete;
 
@@ -175,17 +188,22 @@ struct Stackbuf {
 		return static_cast<std::size_t>(top-base) >= capacity;
 	}
 
+	constexpr std::size_t size() const
+	{
+		return static_cast<std::size_t>(top-base);
+	}
+	
 	constexpr auto operator[](std::size_t s) const
 	{
 		if constexpr (std::is_same_v<R, Regex>) {
 			if (top != base && s < base->size()) {
-				return (*(top - 1))[s];
+				return (*(top-1))[s];
 			}
 
 			return char{};
 		} else {
 			if (s < static_cast<std::size_t>(top - base)) {
-				return *(base + s);
+				return *(base+s);
 			}
 
 			return T{};
@@ -205,65 +223,149 @@ struct Stackbuf {
 	}
 };
 
+constexpr bool atom_begin(const char c)
+{
+        switch (c) {
+                case 'G':
+                case 'Q':
+                        return true;
+                default:
+                        return false;
+        }
+}
+
+constexpr bool atom_end(const char c)
+{
+        switch (c) {
+                case 'G':
+                case 'P':
+                case 'R':
+                        return true;
+                default:
+                        return false;
+        }
+}
+
+constexpr int precedence(const char c)
+{
+        switch (c) {
+                case '|':
+                        return 1;
+                case '.':
+                        return 2;
+                case '*':
+                case '?':
+                case '+':
+                        return 3;
+                default:
+                        return 0;
+        }
+}
+
+constexpr char symb(const char c, bool &escp)
+{
+        if (escp) {
+                escp = false;
+                return 'G';
+        }
+
+        if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
+                return 'G';
+        }
+
+        switch (c) {
+                case ' ':
+                        return ' ';
+                case '\\':
+                        escp = true;
+                        return '\0';
+                case ')':
+                        return 'P';
+                case '(':
+                        return 'Q';
+                case '*':
+                case '?':
+                case '+':
+                        return 'R';
+                case '|':
+                        return 'T';
+                default:
+                        return '\0';
+        }
+}
+
 template <Literal S>
 constexpr auto Regex::torpol()
 {
-	/*
-		torpol is an infix-to-reverse-polish notation converter that assumes CORRECT SYNTAX.
+        /*
+                torpol is an infix-to-reverse-polish notation converter that assumes CORRECT SYNTAX.
 
-		If the syntax is incorrect, e.g., "|a", then it will produce UB.
-		torpol should not be used outside the regex class hence...
+                If the syntax is incorrect, e.g., "|a", then it will produce UB.
+                torpol should not be used outside the regex class hence...
+        */
 
-		A  = (ab*c|d...)
-		T  = operator : |, *, (, ), ?
-		Nc = |A,'()'|, i.e., nesting count.
-		Lc = |A|-(Nc*2), i.e., size of expression without aux. symbols, or length count.
-		Rc = last nested level reading.
+        Literal<S.size * 2> q {};
+        Stackbuf<char, S.size * 2> rs;
 
-		if str = ATB then
-			swap(T,B)
+        std::size_t i = 0;
+        bool escp = false;
+        char prev = '\0';
 
-		swap X Y:
-			shift_right(X, Lc+(Nc*2))
-		
+        for (auto it = std::begin(S.data); it != std::end(S.data) && *it != '\0'; ++it) {
+                if (*it == ' ') continue;
 
-		(The implicit ab. meaning concatenate(a,b) and groupings are left for convenience.)
-	*/
+                char cur = symb(*it, escp);
+                if (cur == '\0') continue;
 
-	Stackbuf<char,S.size> rs;
+                if (prev != '\0' && atom_end(prev) && atom_begin(cur)) {
+			while (rs.size() > 0 && precedence(rs.peek()) >= precedence('.')) {
+                                q.data[i++] = rs.peek();
+                                rs.pop();
+                        }
 
-	auto start = std::rbegin(S.data)+1, end = std::rend(S.data);
+                        rs.push('.');
+                }
 
-	int Rc = 0, Lc = 0, Nc = 0;
-	for (auto rit = start; rit != end; ++rit) {
-		if (*rit == ' ') continue;
+                switch (cur) {
+                        case 'G':
+                                q.data[i++] = *it;
+                                break;
 
-		rs.push(*rit);
+                        case 'Q':
+                                rs.push('(');
+                                break;
 
-		Rc = Nc;
+                        case 'P':
+                                while (rs.size() > 0 && rs.peek() != '(') {
+                                        q.data[i++] = rs.peek();
+                                        rs.pop();
+                                }
 
-		if (*rit == ')') {
-			Nc++;
+                                while (rs.size() > 0 && rs.peek() == '(') rs.pop();
+                                break;
 
-			Lc = 0;
-		} else if (*rit == '(') {
-			Nc--;
-		}
+                        case 'R':
+                        case 'T':
+                                while (rs.size() > 0 && precedence(rs.peek()) >= precedence(*it)) {
+                                        q.data[i++] = rs.peek();
+                                        rs.pop();
+                                }
 
-		if (*rit != '|') Lc++;
+                                rs.push(*it);
+                                break;
+                }
 
-		if (*rit == '|') {
-			if ((Lc-Nc) > 1) {
-				std::rotate(rs.top-Lc-(Nc<<1), rs.top-1, rs.top);
-			} else {
-				std::swap(*(rs.top-2),*(rs.top-1));
-			}
+                prev = cur;
+        }
 
-			if (Rc == Nc) Lc = 0;
-		}
-	}
-	
-	return rs.pop_stack();
+        while (rs.size() > 0) {
+                char tmp = rs.peek();
+                if (!(tmp == ')' || tmp == '(')) q.data[i++] = tmp;
+                rs.pop();
+        }
+
+        q.data[i] = '\0';
+        return q;
 }
 
 #endif /* __RPOL__ */
